@@ -121,8 +121,8 @@ def send_email(traffic_data, interface):
     smtp_port = 1025
 
     # 发件人和收件人
-    sender_email = 'test@example.com'
-    receiver_email = 'test@maifeipin.com'
+    sender_email = 'root@local.host'
+    receiver_email = 'autoit@maifeipin.com'
 
     # 获取主机信息
     hostname = socket.gethostname()
