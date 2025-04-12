@@ -3,7 +3,7 @@
 # 配置变量
 SCRIPT_REPO_URL="https://github.com/chenli118/send_client_report.git"
 SCRIPT_DIR="/root/script"
-EMAIL_SCRIPT="send_client_report.py"
+EMAIL_SCRIPT="send_traffic_report.py"
 CRON_SCHEDULE="0 23 * * * python3 ${SCRIPT_DIR}/${EMAIL_SCRIPT} >> /var/log/traffic_report.log 2>&1"
 
 # 更新系统
