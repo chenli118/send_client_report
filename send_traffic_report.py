@@ -21,9 +21,22 @@ def get_active_interface():
 
 def get_public_ip():
     try:
-        return subprocess.getoutput("curl -s ifconfig.me")
-    except:
-        return "无法获取公网IP"
+        # 获取 IPv4 地址
+        ipv4 = subprocess.getoutput("curl -s4 ifconfig.me")
+        # 获取 IPv6 地址
+        ipv6 = subprocess.getoutput("curl -s6 ifconfig.me")
+        # 如果 IPv4 为空，则返回 "无公网 IPV4"
+        if not ipv4:
+            ipv4 = "无公网 IPV4"
+        
+        # 如果 IPv6 为空，则返回 "无公网 IPV6"
+        if not ipv6:
+            ipv6 = "无公网 IPV6"
+        
+        return f"IPV4: {ipv4} IPV6: {ipv6}"
+    except Exception as e:
+        return f"无法获取公网IP: {str(e)}"
+
 
 def get_traffic_stats(interface):
     try:
