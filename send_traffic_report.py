@@ -97,6 +97,11 @@ def generate_traffic_table(traffic_days):
 
     return table
 
+def get_disk_space():
+    # 获取磁盘剩余空间
+    result = subprocess.getoutput("df -h / | awk 'NR==2 {print $4}'")
+    return result
+
 def send_email(traffic_data, interface):
     # 配置 SMTP 服务器
     smtp_server = 'mail.maifeipin.com'
@@ -110,6 +115,9 @@ def send_email(traffic_data, interface):
     hostname = socket.gethostname()
     public_ip = get_public_ip()
 
+    # 获取磁盘空间
+    disk_space = get_disk_space()
+
     # 准备邮件内容
     if traffic_data['error']:
         subject = f"{hostname} ({public_ip}) 流量报告错误"
@@ -120,6 +128,8 @@ def send_email(traffic_data, interface):
 
 错误信息:
 {traffic_data['error']}
+
+磁盘剩余空间: {disk_space}
 """
     else:
         today_total = format_bytes(traffic_data['today_total'])
@@ -137,6 +147,8 @@ def send_email(traffic_data, interface):
 
 原始vnstat输出:
 {traffic_data['raw']}
+
+磁盘剩余空间: {disk_space}
 """
 
     # 创建 MIME 对象
