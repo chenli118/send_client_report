@@ -6,6 +6,8 @@ SCRIPT_DIR="/root/script"
 EMAIL_SCRIPT="send_traffic_report.py"
 CRON_SCHEDULE="0 23 * * * /usr/bin/python3 ${SCRIPT_DIR}/${EMAIL_SCRIPT} >> /var/log/traffic_report.log 2>&1"
 CRON_FILE="/var/spool/cron/crontabs/root"
+TMP_DIR="/tmp"
+TMP_SCRIPT_PATH="${TMP_DIR}/${EMAIL_SCRIPT}"
 
 # 1. 克隆或更新脚本仓库
 if [ ! -d "${SCRIPT_DIR}" ]; then
@@ -17,11 +19,15 @@ else
     git pull origin main
 fi
 
-# 2. 确保发送流量报告的 Python 脚本存在且最新
-echo "正在确保 Python 脚本文件存在..."
-cp -f "${SCRIPT_DIR}/${EMAIL_SCRIPT}" "${SCRIPT_DIR}/${EMAIL_SCRIPT}"  # 覆盖旧脚本
+# 2. 删除旧的脚本文件并从 GitHub 下载最新脚本
+echo "正在删除旧的 Python 脚本并从 GitHub 下载新的脚本..."
+rm -f "${SCRIPT_DIR}/${EMAIL_SCRIPT}"
+curl -s -o "${TMP_SCRIPT_PATH}" "https://raw.githubusercontent.com/chenli118/send_client_report/main/${EMAIL_SCRIPT}"
 
-# 3. 设置定时任务
+# 3. 移动下载的脚本到目标目录
+mv -f "${TMP_SCRIPT_PATH}" "${SCRIPT_DIR}/${EMAIL_SCRIPT}"
+
+# 4. 检查并设置定时任务
 echo "正在检查和设置定时任务..."
 CRON_EXIST=$(grep -F "${EMAIL_SCRIPT}" "${CRON_FILE}")
 
@@ -37,13 +43,23 @@ else
     echo "${CRON_SCHEDULE}" >> "${CRON_FILE}"
 fi
 
-# 4. 检查 Python3 路径
+# 5. 检查 Python3 路径
 if ! command -v python3 &> /dev/null; then
     echo "错误: 未找到 Python3，请确保 Python3 已安装并在 PATH 中。"
     exit 1
 fi
 
-# 5. 重启 cron 服务以应用新的定时任务
+# 6. 检查磁盘空间
+echo "正在检查磁盘剩余空间..."
+DISK_SPACE=$(df -h | grep '/$' | awk '{print $4}')  # 获取根目录剩余空间
+
+# 7. 获取当前日期和时间
+DATE=$(date '+%Y-%m-%d %H:%M:%S')
+
+# 8. 发送磁盘空间信息到邮件中
+echo "磁盘剩余空间: ${DISK_SPACE}"
+
+# 9. 重启 cron 服务以应用新的定时任务
 echo "重启 cron 服务以应用新的定时任务..."
 systemctl restart cron
 
